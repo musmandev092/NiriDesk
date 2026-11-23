@@ -1,0 +1,13 @@
+target/
+__pycache__/
+*.bak
+*.bak.*
+*.log
+*.iso
+*.swp
+.toolbox
+.claude/
+install/tui/pkgindex.tsv.gz
+install/tui/build.json
+PLAN.md
+personal/
