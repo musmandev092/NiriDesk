@@ -212,6 +212,9 @@ do_system() {
         done_ "firewall rules (updated)"
     else done_ "firewall rules"; fi
     done_ "firewall: LocalSend 53317 and mDNS open, SSH closed"
+
+    [ -f "$HERE/.extras" ] && bash "$HERE/extras.sh" system
+    return 0
 }
 
 gh_release_asset() {
@@ -382,6 +385,9 @@ PYEOF
     link home/.local/share/applications/open-with.desktop .local/share/applications/open-with.desktop
     link home/.local/bin/screenshot-notify .local/bin/screenshot-notify
     link home/.local/bin/kbd-light .local/bin/kbd-light
+
+    [ -f "$HERE/.extras" ] && bash "$HERE/extras.sh" home
+    return 0
 }
 
 steps=("$@")
