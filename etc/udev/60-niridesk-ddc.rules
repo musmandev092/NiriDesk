@@ -1,0 +1,2 @@
+# DDC monitor brightness for the logged-in user
+SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", TAG+="uaccess"
