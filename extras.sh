@@ -10,7 +10,7 @@ done_() { printf '    \033[32mok\033[0m  %s\n' "$*"; }
 note() { printf '    \033[33m!!\033[0m  %s\n' "$*"; }
 fetch() { curl -fsSL --proto '=https' --tlsv1.2 --retry 3 --retry-delay 2 --connect-timeout 15 "$@"; }
 
-SYSTEM_EXTRAS="chromium edge claude-app codex-app cursor-app opencode-app"
+SYSTEM_EXTRAS="chromium edge gh vscode claude-app codex-app cursor-app opencode-app"
 HOME_EXTRAS="claude-code codex-cli antigravity-cli cursor-cli opencode-cli herdr-cli herdr-app antigravity-app"
 ANTIGRAVITY_URL=https://storage.googleapis.com/antigravity-public/antigravity-hub/2.34.0-5887025308631040/linux-x64/Antigravity.tar.gz
 
@@ -56,10 +56,20 @@ x_chromium() {
     done_ "Chromium (sign-in keys from ~/.config/chromium-flags.conf)"
 }
 
+ms_key() { rpm -q gpg-pubkey --qf '%{SUMMARY}\n' 2>/dev/null | grep -q Microsoft || $SUDO rpm --import https://packages.microsoft.com/keys/microsoft.asc; }
+
 x_edge() {
-    rpm -q gpg-pubkey --qf '%{SUMMARY}\n' 2>/dev/null | grep -q Microsoft || $SUDO rpm --import https://packages.microsoft.com/keys/microsoft.asc
+    ms_key
     repo_put microsoft-edge.repo
     dnf_install microsoft-edge-stable && done_ "Microsoft Edge"
+}
+
+x_gh() { dnf_install gh && done_ "GitHub CLI"; }
+
+x_vscode() {
+    ms_key
+    repo_put vscode.repo
+    dnf_install code && done_ "VS Code"
 }
 
 x_claude-app() { dnf_install claude-desktop && done_ "Claude Desktop"; }

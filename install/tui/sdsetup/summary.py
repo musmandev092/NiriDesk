@@ -16,12 +16,14 @@ EXTRAS = [
     ("cursor-cli", "Cursor CLI", "CLI tools"),
     ("opencode-cli", "OpenCode CLI", "CLI tools"),
     ("herdr-cli", "Herdr", "CLI tools"),
+    ("gh", "GitHub CLI", "CLI tools"),
+    ("vscode", "VS Code", "Apps"),
     ("claude-app", "Claude Desktop", "Apps"),
     ("codex-app", "Codex", "Apps"),
     ("antigravity-app", "Antigravity", "Apps"),
     ("cursor-app", "Cursor", "Apps"),
     ("opencode-app", "OpenCode", "Apps"),
-    ("herdr-app", "Herdr", "Apps"),
+    ("herdr-app", "Herdr app", "Apps"),
 ]
 
 
