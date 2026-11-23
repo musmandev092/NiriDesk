@@ -152,7 +152,7 @@ class Setup:
         r = self.c.repos
         out = [("PACKAGE SOURCES", "bold"), f"Fedora  {r.fedora or 'mirror list (automatic)'}",
                f"DMS     {r.copr_cache + ' (cache)' if r.copr_cache else 'COPR duxlabs/dms, duxlabs/dux-repo'}",
-               f"Testing {'on' if r.testing else 'off'}", "RPM Fusion, Brave, personal repo: on (required)"]
+               f"Testing {'on' if r.testing else 'off'}", "RPM Fusion, Brave, Claude repo: on (required)"]
         if self.repo_status:
             out.append("")
             ok = sum(1 for _, good, _ in self.repo_status if good)
@@ -600,7 +600,7 @@ class Setup:
                  missing=lambda: bool(self.missing_for("Root"))),
             Item("Other users", lambda: ", ".join(u.name for u in a.users) or "none", action=self.users,
                  preview=lambda: ["Optional extra accounts.", "They get the system-wide niri and DMS defaults;",
-                                  "the NiriDesk personal setup runs for the administrator."],
+                                  "the NiriDesk home setup runs for the administrator."],
                  missing=lambda: bool(self.missing_for("Password for"))),
             back(),
         ]).run()

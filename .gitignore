@@ -10,5 +10,4 @@ __pycache__/
 install/tui/pkgindex.tsv.gz
 install/tui/build.json
 PLAN.md
-personal/
 .extras

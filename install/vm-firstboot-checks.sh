@@ -25,12 +25,12 @@ chk "NiriDesk owned by the user"       sh -c '[ "$(stat -c %U ~/Projects/NiriDes
 chk "GRUB font"                        grep -qx 'GRUB_FONT=/boot/grub2/fonts/adwaita-mono-48.pf2' /etc/default/grub
 chk "greetd running"                   systemctl is-active greetd
 chk "fully updated"                    sh -c '[ "$(echo test | sudo -S dnf -q check-upgrade 2>/dev/null | grep -cE "\.(x86_64|noarch)")" -eq 0 ]'
-chk "no Chromium (personal setup only)" sh -c '! rpm -q chromium'
+chk "no Chromium (extra only)" sh -c '! rpm -q chromium'
 if [ "$tb" = 1 ]; then chk "toolbox installed" rpm -q toolbox; else chk "no toolbox" sh -c '! rpm -q toolbox'; fi
 chk "login screen on niri"             grep -q -- '--command niri' /etc/greetd/config.toml
 s tail -3 /root/ks-post-nochroot.log | sed 's/^/        /'
 
-echo "## first login: personal setup runs by itself"
+echo "## first login: home setup runs by itself"
 chk "first-run service enabled"        test -L ~/.config/systemd/user/default.target.wants/niridesk-firstrun.service
 echo "  waiting for it to finish (up to 25 min) ..."
 for _ in $(seq 150); do

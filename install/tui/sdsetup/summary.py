@@ -206,6 +206,6 @@ def review(c, secrets, probe, env):
         ("Services", services_value(c) + "; firewall, power profiles on; no SSH server"),
         ("Network", ("copy connections" if c.network.installed == "copy" else "save nothing") +
          (f", static {c.network.address}" if c.network.wired == "static" else ", DHCP")),
-        ("Repos", repos_value(c) + "; DMS " + ("cache" if c.repos.copr_cache else "COPR") + ", RPM Fusion, Brave, personal repo"),
+        ("Repos", repos_value(c) + "; DMS " + ("cache" if c.repos.copr_cache else "COPR") + ", RPM Fusion, Brave, Claude repo"),
         ("Boot", boot_value(c) + (f", args: {c.boot.args}" if c.boot.args else "")),
     ]

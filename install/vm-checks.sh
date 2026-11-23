@@ -28,8 +28,8 @@ echo "## apps"
 for p in brave-origin foot Thunar featherpad galculator imv mpv gnome-disk-utility btop nano cups cups-pk-helper firewalld; do
     chk "$p" rpm -q "$p"
 done
-for p in chromium microsoft-edge-stable powershell; do
-    chk "$p absent (personal setup only)" sh -c "! rpm -q $p"
+for p in chromium microsoft-edge-stable; do
+    chk "$p absent (extra only)" sh -c "! rpm -q $p"
 done
 if [ "$tb" = 1 ]; then chk "toolbox" rpm -q toolbox; else chk "toolbox absent" sh -c '! rpm -q toolbox'; fi
 chk "LocalSend in /opt"                 test -x /opt/localsend/localsend_app
