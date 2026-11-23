@@ -1,0 +1,326 @@
+// NiriDesk niri config (docs: /usr/share/doc/niri/wiki)
+
+config-notification {
+    disable-failed
+}
+
+input {
+    keyboard {
+        xkb {
+            // empty: layout from localectl
+        }
+        numlock
+    }
+    touchpad {
+        tap
+        natural-scroll
+        dwt
+        accel-speed 0.25
+        accel-profile "adaptive"
+    }
+    focus-follows-mouse max-scroll-amount="0%"
+}
+
+gestures {
+    hot-corners {
+        off
+    }
+}
+
+layout {
+    background-color "transparent"
+    gaps 4
+    center-focused-column "never"
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+        proportion 1.0
+    }
+    default-column-width { proportion 0.5; }
+    focus-ring {
+        width 2
+    }
+    border {
+        off
+    }
+    shadow {
+        softness 30
+        spread 5
+        offset x=0 y=5
+        color "#0007"
+    }
+}
+
+layer-rule {
+    match namespace="^quickshell$"
+    place-within-backdrop true
+}
+
+overview {
+    workspace-shadow {
+        off
+    }
+}
+
+environment {
+    XDG_CURRENT_DESKTOP "niri"
+    QT_QPA_PLATFORM "wayland;xcb"
+    ELECTRON_OZONE_PLATFORM_HINT "auto"
+    QT_QPA_PLATFORMTHEME "gtk3"
+    QT_QPA_PLATFORMTHEME_QT6 "gtk3"
+    TERMINAL "foot"
+    DMS_PRIVESC "sudo"
+}
+
+spawn-at-startup "dms" "run"
+spawn-at-startup "xdg-user-dirs-update"
+
+hotkey-overlay {
+    skip-at-startup
+}
+
+prefer-no-csd
+screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
+
+animations {
+    workspace-switch {
+        spring damping-ratio=0.80 stiffness=523 epsilon=0.0001
+    }
+    window-open {
+        duration-ms 150
+        curve "ease-out-expo"
+    }
+    window-close {
+        duration-ms 150
+        curve "ease-out-quad"
+    }
+    horizontal-view-movement {
+        spring damping-ratio=0.85 stiffness=423 epsilon=0.0001
+    }
+    window-movement {
+        spring damping-ratio=0.75 stiffness=323 epsilon=0.0001
+    }
+    window-resize {
+        spring damping-ratio=0.85 stiffness=423 epsilon=0.0001
+    }
+    config-notification-open-close {
+        spring damping-ratio=0.65 stiffness=923 epsilon=0.001
+    }
+    screenshot-ui-open {
+        duration-ms 200
+        curve "ease-out-quad"
+    }
+    overview-open-close {
+        spring damping-ratio=0.85 stiffness=800 epsilon=0.0001
+    }
+}
+
+
+// floating dialogs
+window-rule {
+    match app-id=r#"^xdg-desktop-portal"#
+    match app-id=r#"^gcr-prompter$"#
+    match app-id=r#"^org\.gnome\.seahorse"#
+    match app-id=r#"^galculator$"#
+    match app-id=r#"^open-with$"#
+    match app-id=r#"^blueman-manager$"#
+    match title=r#"^(Open|Save|Select|Choose|Pick)( |$)"#
+    match title=r#"^Extract"#
+    match title=r#"^What's New"#
+    match app-id=r#"firefox$"# title="^Picture-in-Picture$"
+    open-floating true
+}
+window-rule {
+    match app-id=r#"^xdg-desktop-portal"#
+    match title=r#"^(Open|Save|Select|Choose|Pick)( |$)"#
+    default-column-width { proportion 0.6; }
+    default-window-height { proportion 0.7; }
+}
+window-rule {
+    match app-id=r#"^steam$"# title=r#"^notificationtoasts_\d+_desktop$"#
+    default-floating-position x=10 y=10 relative-to="bottom-right"
+    open-focused false
+}
+window-rule {
+    match app-id="foot"
+    draw-border-with-background false
+}
+// Claude quick-entry popup
+window-rule {
+    match app-id=r#"^com\.anthropic\.Claude$"# is-floating=true
+    focus-ring {
+        off
+    }
+    border {
+        off
+    }
+    shadow {
+        off
+    }
+    draw-border-with-background false
+}
+
+debug {
+    honor-xdg-activation-with-invalid-serial
+    // render on NVIDIA instead of the iGPU:
+    // render-drm-device "/dev/dri/by-path/pci-0000:01:00.0-render"
+}
+
+binds {
+    // Apps
+    Mod+Return hotkey-overlay-title="Terminal" { spawn "foot"; }
+    Mod+E hotkey-overlay-title="Files" { spawn "thunar"; }
+    Mod+B hotkey-overlay-title="Browser" { spawn "brave-origin"; }
+    XF86Calculator { spawn "galculator"; }
+
+    // DMS shell
+    Mod+Space hotkey-overlay-title="Launcher" { spawn "dms" "ipc" "call" "spotlight" "toggle"; }
+    Alt+Space { spawn "dms" "ipc" "call" "spotlight-bar" "toggle"; }
+    Mod+K hotkey-overlay-title="Keybindings" { spawn "dms" "ipc" "call" "keybinds" "toggle" "niri"; }
+    Mod+Shift+Slash { spawn "dms" "ipc" "call" "keybinds" "toggle" "niri"; }
+    Mod+Comma { spawn "dms" "ipc" "call" "settings" "focusOrToggle"; }
+    Mod+Z { spawn "dms" "ipc" "call" "openHere" "toggle"; }
+    Mod+V { spawn "dms" "ipc" "call" "clipboard" "toggle"; }
+    Mod+X { spawn "dms" "ipc" "call" "powermenu" "toggle"; }
+    Mod+L { spawn "dms" "ipc" "call" "lock" "lock"; }
+    Mod+M { spawn "dms" "ipc" "call" "dash" "toggle" "media"; }
+    Mod+N { spawn "dms" "ipc" "call" "notifications" "toggle"; }
+    Mod+Ctrl+N { spawn "dms" "ipc" "call" "notepad" "toggle"; }
+    Mod+Y { spawn "dms" "ipc" "call" "dash" "toggle" "wallpaper"; }
+    Mod+P { spawn "dms" "ipc" "outputs" "cycleProfile"; }
+    XF86Display { spawn "dms" "ipc" "outputs" "cycleProfile"; }
+    Mod+Shift+N { spawn "dms" "ipc" "call" "night" "toggle"; }
+    Mod+Alt+I { spawn "dms" "ipc" "call" "inhibit" "toggle"; }
+    Mod+Alt+C { spawn "dms" "ipc" "call" "color-picker" "toggle"; }
+    Ctrl+Shift+Escape { spawn "dms" "ipc" "call" "processlist" "focusOrToggle"; }
+
+    // Screenshots
+    Print { spawn "sh" "-c" "$HOME/.local/bin/screenshot-notify full"; }
+    Alt+Print { spawn "sh" "-c" "$HOME/.local/bin/screenshot-notify window"; }
+    Mod+Shift+S { spawn "sh" "-c" "$HOME/.local/bin/screenshot-notify region"; }
+
+    // Media, volume, brightness (also on the lock screen)
+    XF86AudioRaiseVolume allow-when-locked=true { spawn "dms" "ipc" "call" "audio" "increment" "3"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn "dms" "ipc" "call" "audio" "decrement" "3"; }
+    XF86AudioMute allow-when-locked=true { spawn "dms" "ipc" "call" "audio" "mute"; }
+    XF86AudioMicMute allow-when-locked=true { spawn "dms" "ipc" "call" "audio" "micmute"; }
+    XF86AudioPlay allow-when-locked=true { spawn "dms" "ipc" "call" "mpris" "playPause"; }
+    XF86AudioPause allow-when-locked=true { spawn "dms" "ipc" "call" "mpris" "playPause"; }
+    XF86AudioNext allow-when-locked=true { spawn "dms" "ipc" "call" "mpris" "next"; }
+    XF86AudioPrev allow-when-locked=true { spawn "dms" "ipc" "call" "mpris" "previous"; }
+    XF86MonBrightnessUp allow-when-locked=true { spawn "dms" "ipc" "call" "brightness" "increment" "5" ""; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn "dms" "ipc" "call" "brightness" "decrement" "5" ""; }
+    XF86KbdBrightnessUp allow-when-locked=true { spawn "brightnessctl" "-d" "*::kbd_backlight" "set" "+50%"; }
+    XF86KbdBrightnessDown allow-when-locked=true { spawn "brightnessctl" "-d" "*::kbd_backlight" "set" "50%-"; }
+    XF86KbdLightOnOff allow-when-locked=true { spawn "sh" "-c" "$HOME/.local/bin/kbd-light"; }
+    XF86TouchpadToggle allow-when-locked=true repeat=false { spawn "niri" "msg" "action" "toggle-touchpad"; }
+
+    // Windows
+    Mod+Q repeat=false { close-window; }
+    Mod+F { maximize-column; }
+    Mod+Shift+F { fullscreen-window; }
+    Mod+Shift+T { toggle-window-floating; }
+    Mod+Ctrl+Space { switch-focus-between-floating-and-tiling; }
+    Mod+T { toggle-column-tabbed-display; }
+    Mod+C { center-column; }
+    Mod+BracketLeft { consume-or-expel-window-left; }
+    Mod+BracketRight { consume-or-expel-window-right; }
+
+    // Focus and move
+    Mod+Left { focus-column-left; }
+    Mod+Right { focus-column-right; }
+    Mod+Up { focus-window-or-workspace-up; }
+    Mod+Down { focus-window-or-workspace-down; }
+    Mod+A { focus-column-left; }
+    Mod+D { focus-column-right; }
+    Mod+Shift+Left { move-column-left; }
+    Mod+Shift+Right { move-column-right; }
+    Mod+Shift+Up { move-window-up-or-to-workspace-up; }
+    Mod+Shift+Down { move-window-down-or-to-workspace-down; }
+    Mod+Shift+A { move-column-left; }
+    Mod+Shift+D { move-column-right; }
+    Mod+Home { focus-column-first; }
+    Mod+End { focus-column-last; }
+
+    // Workspaces
+    Mod+W { focus-workspace-up; }
+    Mod+S { focus-workspace-down; }
+    Mod+Ctrl+W { move-column-to-workspace-up; }
+    Mod+Ctrl+S { move-column-to-workspace-down; }
+    Mod+Ctrl+Left { focus-workspace-up; }
+    Mod+Ctrl+Right { focus-workspace-down; }
+    Mod+Ctrl+Shift+Left { move-column-to-workspace-up; }
+    Mod+Ctrl+Shift+Right { move-column-to-workspace-down; }
+    Mod+Ctrl+Up { focus-workspace-up; }
+    Mod+Ctrl+Down { focus-workspace-down; }
+    Mod+Ctrl+Shift+Up { move-column-to-workspace-up; }
+    Mod+Ctrl+Shift+Down { move-column-to-workspace-down; }
+    Mod+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
+    Mod+WheelScrollUp cooldown-ms=150 { focus-workspace-up; }
+    Mod+Shift+WheelScrollDown { focus-column-right; }
+    Mod+Shift+WheelScrollUp { focus-column-left; }
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
+    Mod+6 { focus-workspace 6; }
+    Mod+7 { focus-workspace 7; }
+    Mod+8 { focus-workspace 8; }
+    Mod+9 { focus-workspace 9; }
+    Mod+Shift+1 { move-column-to-workspace 1; }
+    Mod+Shift+2 { move-column-to-workspace 2; }
+    Mod+Shift+3 { move-column-to-workspace 3; }
+    Mod+Shift+4 { move-column-to-workspace 4; }
+    Mod+Shift+5 { move-column-to-workspace 5; }
+    Mod+Shift+6 { move-column-to-workspace 6; }
+    Mod+Shift+7 { move-column-to-workspace 7; }
+    Mod+Shift+8 { move-column-to-workspace 8; }
+    Mod+Shift+9 { move-column-to-workspace 9; }
+    Mod+0 { focus-workspace 10; }
+    Mod+Shift+0 { move-column-to-workspace 10; }
+
+    // Monitors
+    Mod+Alt+Left { focus-monitor-left; }
+    Mod+Alt+Right { focus-monitor-right; }
+    Mod+Alt+Shift+Left { move-column-to-monitor-left; }
+    Mod+Alt+Shift+Right { move-column-to-monitor-right; }
+    Mod+Shift+P { power-off-monitors; }
+
+    // Sizes
+    Mod+R { switch-preset-column-width; }
+    Mod+Ctrl+Shift+R { switch-preset-window-height; }
+    Mod+Ctrl+R { reset-window-height; }
+    Mod+Minus { set-column-width "-10%"; }
+    Mod+Equal { set-column-width "+10%"; }
+    Mod+Shift+Minus { set-window-height "-10%"; }
+    Mod+Shift+Equal { set-window-height "+10%"; }
+
+    // Overview and session
+    Mod+Tab repeat=false { toggle-overview; }
+    Mod+O repeat=false { toggle-overview; }
+    Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
+    Mod+Pause allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
+    Mod+Shift+R { spawn "niri" "msg" "action" "load-config-file"; }
+    Mod+Shift+E { quit; }
+}
+
+recent-windows {
+    binds {
+        Alt+Tab         { next-window scope="output"; }
+        Alt+Shift+Tab   { previous-window scope="output"; }
+        Alt+grave       { next-window filter="app-id"; }
+        Alt+Shift+grave { previous-window filter="app-id"; }
+    }
+}
+
+// DMS-generated parts
+include optional=true "dms/colors.kdl"
+include optional=true "dms/layout.kdl"
+include optional=true "dms/alttab.kdl"
+include optional=true "dms/outputs.kdl"
+include optional=true "dms/cursor.kdl"
+include optional=true "dms/windowrules.kdl"
+include optional=true "dms/wpblur.kdl"
+include optional=true "dms/binds.kdl"
