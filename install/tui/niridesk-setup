@@ -1,0 +1,39 @@
+#!/bin/bash
+HERE="$(cd "$(dirname "$0")" && pwd)"
+OUT=/tmp/niridesk
+mkdir -p -m 0700 "$OUT"
+export LANG=C.UTF-8 ESCDELAY=25
+
+modprobe qemu_fw_cfg 2>/dev/null
+ui=""
+if [ -n "$(systemd-detect-virt 2>/dev/null | grep -vx none)" ]; then
+    ui=$(cat /sys/firmware/qemu_fw_cfg/by_name/opt/niridesk/ui/raw 2>/dev/null)
+fi
+
+ARGS=()
+if grep -q "console=ttyS0" /proc/cmdline && [ "$ui" != curses ]; then
+    TTY=/dev/ttyS1
+    export TERM=vt220
+    ARGS=(--text)
+else
+    TTY=/dev/tty8
+    export TERM=linux
+    chvt 8
+fi
+
+python3 -I -B "$HERE/run.py" "$@" "${ARGS[@]}" <"$TTY" >"$TTY" 2>>"$OUT/setup.err"
+rc=$?
+if [ "$rc" = 0 ]; then
+    printf '\nInstalling. This takes about 15 minutes; the screen switches to the installer now.\n' >"$TTY"
+    sleep 2
+fi
+[ "$TTY" = /dev/tty8 ] && chvt 1
+case $rc in
+    0) echo "niridesk-setup: settings written"; exit 0 ;;
+    3) systemctl poweroff ;;
+    4) systemctl reboot ;;
+    5) printf '\nType exit to stop the installer.\n' >"$TTY"; bash -i <"$TTY" >"$TTY" 2>&1 ;;
+    *) printf '\nINSTALL STOPPED. Nothing was written to any disk. Power off and boot again to retry.\n' >"$TTY"; sleep 20 ;;
+esac
+echo "niridesk-setup: stopped (code $rc)"
+exit 1
