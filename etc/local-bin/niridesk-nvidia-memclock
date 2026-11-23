@@ -1,0 +1,6 @@
+#!/bin/sh
+# Lock the memory clock at max (reclocking stutters the screen).
+max=$(nvidia-smi --query-gpu=clocks.max.memory --format=csv,noheader,nounits 2>/dev/null | head -n1 | tr -d ' ')
+case $max in ''|*[!0-9]*) echo "niridesk-nvidia-memclock: no NVIDIA GPU or max clock unknown" >&2; exit 0 ;; esac
+nvidia-smi --lock-memory-clocks="$max,$max" || echo "niridesk-nvidia-memclock: this GPU does not allow memory clock locking" >&2
+exit 0

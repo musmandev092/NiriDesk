@@ -1,0 +1,12 @@
+[Unit]
+Description=Lock NVIDIA memory clock at its maximum (stops reclock stutter)
+After=nvidia-persistenced.service suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target
+Wants=nvidia-persistenced.service
+ConditionPathExists=/usr/bin/nvidia-smi
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/niridesk-nvidia-memclock
+
+[Install]
+WantedBy=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target
