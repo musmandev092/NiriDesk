@@ -1,0 +1,12 @@
+[Unit]
+Description=Keep hibernation resume kernel arguments in sync with the swapfile
+After=local-fs.target swap.target
+RequiresMountsFor=/boot /swap
+ConditionPathExists=/swap/swapfile
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/niridesk-resume-check boot
+
+[Install]
+WantedBy=multi-user.target

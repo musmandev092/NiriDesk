@@ -1,0 +1,10 @@
+[Unit]
+Description=Periodic check of hibernation resume arguments
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=15min
+Unit=niridesk-resume-check.service
+
+[Install]
+WantedBy=timers.target

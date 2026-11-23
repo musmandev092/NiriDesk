@@ -1,0 +1,14 @@
+[Unit]
+Description=NiriDesk hibernation setup (first boot)
+After=local-fs.target swap.target
+ConditionPathExists=!/var/lib/niridesk/hibernate.done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/niridesk-hibernate/niridesk-hibernate-setup
+ExecStartPost=/usr/bin/touch /var/lib/niridesk/hibernate.done
+StateDirectory=niridesk
+TimeoutStartSec=15min
+
+[Install]
+WantedBy=multi-user.target

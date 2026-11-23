@@ -1,0 +1,15 @@
+[Unit]
+Description=Check hibernation resume arguments around hibernation
+Before=systemd-hibernate.service systemd-suspend-then-hibernate.service systemd-hybrid-sleep.service
+RequiresMountsFor=/boot /swap
+ConditionPathExists=/swap/swapfile
+StopWhenUnneeded=yes
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/libexec/niridesk-resume-check sleep
+ExecStop=/usr/local/libexec/niridesk-resume-check resumed
+
+[Install]
+WantedBy=hibernate.target suspend-then-hibernate.target hybrid-sleep.target

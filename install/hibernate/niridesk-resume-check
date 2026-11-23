@@ -1,0 +1,102 @@
+#!/bin/bash
+# Keeps resume=/resume_offset= in sync with the swapfile; never changes the swapfile itself.
+set -u
+SWAPFILE=${SWAPFILE:-/swap/swapfile}
+STAMPS=/var/lib/niridesk-resume
+MODE=${1:-boot}
+
+log() { echo "niridesk-resume-check: $*"; }
+
+if [ "$MODE" = resumed ]; then
+    # undo the one-shot boot entry set before sleeping
+    if [ -f /run/niridesk-next-entry ]; then
+        grub2-editenv - unset next_entry && log "cleared one-shot boot entry"
+        rm -f /run/niridesk-next-entry
+    fi
+    exit 0
+fi
+
+[ -f "$SWAPFILE" ] || { log "$SWAPFILE missing, nothing to do"; exit 0; }
+
+swap_offset() {
+    case $(stat -f -c %T "$SWAPFILE") in
+        btrfs) btrfs inspect-internal map-swapfile -r "$SWAPFILE" ;;
+        *) filefrag -v "$SWAPFILE" | sed -n 's/^ *0: *0\.\. *[0-9]*: *\([0-9]*\)\.\..*/\1/p' ;;
+    esac
+}
+
+uuid=$(findmnt -no UUID -T "$SWAPFILE")
+offset=$(swap_offset)
+if [ -z "$uuid" ] || [ -z "$offset" ]; then log "cannot determine UUID/offset (uuid='$uuid' offset='$offset')"; exit 1; fi
+want="resume=UUID=$uuid resume_offset=$offset"
+
+has_args() { case " $1 " in *" resume=UUID=$uuid "*) case " $1 " in *" resume_offset=$offset "*) return 0 ;; esac ;; esac; return 1; }
+strip_args() { sed -E 's/(^| )resume(_offset)?=[^ ]*//g; s/  +/ /g; s/^ //; s/ $//'; }
+
+case " $(cat /proc/cmdline) " in
+    *" resume_offset=$offset "*) ;;
+    *) [ "$MODE" = boot ] && log "this boot used stale or no resume args; fixing for next boot" ;;
+esac
+
+# logind refuses to hibernate while the live offset points at nothing, so fix it now too
+if [ -w /sys/power/resume_offset ] && [ "$(cat /sys/power/resume_offset)" != "$offset" ]; then
+    echo "$offset" > /sys/power/resume_offset && log "live resume_offset set to $offset"
+fi
+
+changed=0
+while IFS= read -r line; do
+    a=${line#args=\"}; a=${a%\"}
+    has_args "$a" || changed=1
+done < <(grubby --info=ALL 2>/dev/null | grep '^args=')
+if [ "$changed" = 1 ]; then
+    grubby --update-kernel=ALL --remove-args="resume resume_offset" >/dev/null
+    grubby --update-kernel=ALL --args="$want" >/dev/null
+    log "boot entries updated: $want"
+fi
+
+if [ -f /etc/default/grub ]; then
+    cur=$(sed -n 's/^GRUB_CMDLINE_LINUX="\(.*\)"$/\1/p' /etc/default/grub)
+    if ! has_args "$cur"; then
+        new="$(printf '%s' "$cur" | strip_args) $want"
+        sed -i "s|^GRUB_CMDLINE_LINUX=.*|GRUB_CMDLINE_LINUX=\"${new# }\"|" /etc/default/grub
+        log "/etc/default/grub updated"
+    fi
+fi
+if [ -f /etc/kernel/cmdline ]; then
+    cur=$(cat /etc/kernel/cmdline)
+    if ! has_args "$cur"; then
+        printf '%s %s\n' "$(printf '%s' "$cur" | strip_args)" "$want" > /etc/kernel/cmdline
+        log "/etc/kernel/cmdline updated"
+    fi
+    [ /etc/kernel/cmdline -ot /etc/default/grub ] && touch /etc/kernel/cmdline
+fi
+
+if [ "$MODE" = sleep ]; then
+    # resume needs the same kernel: if it is not the default entry, boot it once more
+    cur=/boot/vmlinuz-$(uname -r)
+    if [ "$(grubby --default-kernel 2>/dev/null)" != "$cur" ] && command -v grub2-reboot >/dev/null; then
+        id=$(grubby --info="$cur" 2>/dev/null | sed -n 's/^id="\(.*\)"$/\1/p')
+        [ -n "$id" ] && grub2-reboot "$id" && touch /run/niridesk-next-entry && log "next boot set to running kernel entry $id"
+    fi
+    exit 0
+fi
+
+mkdir -p "$STAMPS"
+for img in /boot/initramfs-*.img; do
+    v=${img#/boot/initramfs-}; v=${v%.img}
+    case $v in *kdump*) continue ;; esac
+    stamp="$STAMPS/$v"
+    m=$(stat -c %Y "$img")
+    [ "$(cat "$stamp" 2>/dev/null)" = "$m" ] && continue
+    if ! lsinitrd "$img" 2>/dev/null | grep -q 'systemd-hibernate-resume'; then
+        case $v in 0-rescue-*) log "rescue initramfs $img lacks resume support"; continue ;; esac
+        log "initramfs for $v lacks resume support; rebuilding"
+        dracut -f --kver "$v" || { log "dracut failed for $v"; continue; }
+        m=$(stat -c %Y "$img")
+    fi
+    echo "$m" > "$stamp"
+done
+for v in /lib/modules/*/; do v=$(basename "$v")
+    [ -f "/lib/modules/$v/vmlinuz" ] && [ ! -f "/boot/initramfs-$v.img" ] && log "kernel $v has no initramfs"
+done
+exit 0
