@@ -67,6 +67,7 @@ class Ssh:
 @dataclass
 class Profile:
     toolbox: bool = False
+    extras: list = field(default_factory=list)
     nvidia: str = "auto"  # auto-detected; answers files may force "1"/"0" (VM tests)
 
 

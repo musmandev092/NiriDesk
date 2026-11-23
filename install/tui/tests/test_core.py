@@ -211,6 +211,7 @@ class KickstartTest(unittest.TestCase):
         self.assertEqual(kickstart.reparse(kickstart.render(c, s, p, env(p), hide=True)), "")
         self.assertIn("zram-generator-defaults", files["ks-packages.cfg"])
         self.assertIn("TOOLBOX=0", files["choices.env"])
+        self.assertIn("EXTRAS=", files["choices.env"])
         self.assertNotIn("SSHD", files["choices.env"])
 
     def test_hidden_render_has_no_secrets(self):

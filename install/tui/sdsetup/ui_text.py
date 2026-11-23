@@ -293,6 +293,11 @@ class TextUI:
     def sec_profile(self):
         pr = self.c.profile
         pr.toolbox = self.yes("toolbox", "Install toolbox (podman containers for development)?", pr.toolbox)
+        names = " ".join(k for k, _, _ in S.EXTRAS)
+        valid = {k for k, _, _ in S.EXTRAS}
+        raw = self.ask("extras", f"Extras, space separated (Enter for none): {names}", " ".join(pr.extras),
+                       lambda v: "" if all(x in valid for x in v.split()) else "unknown extra")
+        pr.extras = raw.split()
 
     def sec_services(self):
         sv = self.c.services

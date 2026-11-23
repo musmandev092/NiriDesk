@@ -757,6 +757,7 @@ class Setup:
                              preview=lambda: ["toolbox + podman (containers for development).",
                                               "No: not installed. Add it later: touch .toolbox and rerun apply.sh system.",
                                               "", "NVIDIA is detected automatically."]),
+            Item("Extras", lambda: S.extras_value(self.c), action=self.extras, preview=self.prev_extras),
             Item("Extra packages", lambda: S.packages_value(self.c), action=self.packages, preview=self.prev_packages),
             self.toggle_item("Bluetooth", lambda: sv.bluetooth, lambda v: setattr(sv, "bluetooth", v),
                              preview=lambda: ["bluetooth.service", "Off: disabled, not removed."]),
@@ -764,6 +765,33 @@ class Setup:
                              preview=lambda: ["cups.service", "Off: disabled, not removed."]),
             back(),
         ]).run()
+
+    def extras(self):
+        ex = self.c.profile.extras
+
+        def flip(key):
+            if key in ex:
+                ex.remove(key)
+            else:
+                ex.append(key)
+
+        items, group = [], None
+        for key, label, g in S.EXTRAS:
+            if g != group:
+                if group:
+                    items.append(blank())
+                items.append(header(g))
+                group = g
+            items.append(self.toggle_item(label, lambda k=key: k in ex, lambda _v, k=key: flip(k),
+                                          on="install", off="-", preview=self.prev_extras))
+        items.append(back())
+        Menu(self.ui, "Extras", items).run()
+
+    def prev_extras(self):
+        chosen = [label for key, label, _ in S.EXTRAS if key in self.c.profile.extras]
+        return [("EXTRAS", "bold"), "Optional browsers, CLI tools and apps.", "Space or Enter toggles.", "",
+                "Selected: " + (", ".join(chosen) if chosen else "none"), "",
+                "Add later: list them in .extras and run ./apply.sh"]
 
     # network
 

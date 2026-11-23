@@ -183,6 +183,7 @@ def choices(config, env):
         "PRESET": config.preset,
         "ADMIN": config.auth.admin.name,
         "TOOLBOX": "1" if config.profile.toolbox else "0",
+        "EXTRAS": " ".join(k for k in config.profile.extras if k.replace("-", "").isalnum()),
         "NVIDIA": config.profile.nvidia,
         "XKB_LAYOUT": layouts,
         "XKB_VARIANT": variants if variants.strip(",") else "",

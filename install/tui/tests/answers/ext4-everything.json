@@ -10,7 +10,7 @@
     "boot": {"timeout": 3, "os_prober": false, "args": "i915.enable_psr=0"},
     "auth": {"root_locked": false, "users": [{"name": "sara", "fullname": "Sara Khan", "admin": false}]},
     "ssh": {"enabled": true, "keys": ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g laptop@home"]},
-    "profile": {"toolbox": true, "nvidia": "1"},
+    "profile": {"toolbox": true, "nvidia": "1", "extras": ["chromium", "herdr-cli", "opencode-app"]},
     "services": {"bluetooth": false, "printing": false},
     "network": {"installed": "none", "wired": "static", "device": "enp0s31f6", "address": "192.168.1.20/24", "gateway": "192.168.1.1", "dns": "1.1.1.1 9.9.9.9"},
     "packages": ["htop", "@development-tools"],

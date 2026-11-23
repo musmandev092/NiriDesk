@@ -127,9 +127,14 @@ class SubMenuTest(unittest.TestCase):
         self.assertIn("Connected to HomeNet", "\n".join("\n".join(f) for f in cv.frames))
 
     def test_toolbox_and_services(self):
-        res, cv, c, s, p = tui(["8", "enter", "space", "down", "down", "space", "esc"])
+        res, cv, c, s, p = tui(["8", "enter", "space", "down", "down", "down", "space", "esc"])
         self.assertTrue(c.profile.toolbox)
         self.assertFalse(c.services.bluetooth)
+
+    def test_extras_select(self):
+        res, cv, c, s, p = tui(["8", "enter", "down", "enter", "space", "end", "up", "space", "esc", "esc"])
+        self.assertEqual(c.profile.extras[0], "chromium")
+        self.assertEqual(c.profile.extras, ["chromium", "herdr-app"])
 
     def test_form_buttons_are_separate(self):
         res, cv, c, s, p = tui(["5", "enter", "down", "right"])
@@ -180,7 +185,7 @@ class EveryScreenTest(unittest.TestCase):
         self.assertEqual((c.network.wired, c.network.address, c.network.device), ("static", "192.168.1.20/24", "enp0s2"))
 
     def test_packages_add_unlisted(self):
-        keys = ["8", "enter", "down", "enter", "+"] + type_keys("htop") + ["enter", "enter"]
+        keys = ["8", "enter", "down", "down", "enter", "+"] + type_keys("htop") + ["enter", "enter"]
         res, cv, c, s, p = tui(keys)
         self.assertEqual(c.packages, ["htop"])
 

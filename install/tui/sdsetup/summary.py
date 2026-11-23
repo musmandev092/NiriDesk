@@ -6,6 +6,29 @@ FS_NOTE = {
     "ext4": "ext4: the classic Linux filesystem.",
     "xfs": "xfs: fast for large files; cannot shrink.",
 }
+# id, label, group (installed by extras.sh)
+EXTRAS = [
+    ("chromium", "Chromium (Google sign-in)", "Browsers"),
+    ("edge", "Microsoft Edge", "Browsers"),
+    ("claude-code", "Claude Code", "CLI tools"),
+    ("codex-cli", "Codex CLI", "CLI tools"),
+    ("antigravity-cli", "Antigravity CLI", "CLI tools"),
+    ("cursor-cli", "Cursor CLI", "CLI tools"),
+    ("opencode-cli", "OpenCode CLI", "CLI tools"),
+    ("herdr-cli", "Herdr", "CLI tools"),
+    ("claude-app", "Claude Desktop", "Apps"),
+    ("codex-app", "Codex", "Apps"),
+    ("antigravity-app", "Antigravity", "Apps"),
+    ("cursor-app", "Cursor", "Apps"),
+    ("opencode-app", "OpenCode", "Apps"),
+    ("herdr-app", "Herdr", "Apps"),
+]
+
+
+def extras_value(c):
+    return f"{len(c.profile.extras)} selected" if c.profile.extras else "none"
+
+
 SYSTEM = ["NIRIDESK  (~818 packages, ~833 with toolbox; +4 with NVIDIA)",
           "niri + DMS, Brave, foot, Thunar, FeatherPad, galculator, imv, mpv, Disks,",
           "LocalSend, CUPS, Urdu/Arabic/Indic/Thai/CJK fonts. One lean system for everyone."]
@@ -131,6 +154,8 @@ def profile_value(c, env):
         p += " + NVIDIA"
     if c.profile.toolbox:
         p += " + toolbox"
+    if c.profile.extras:
+        p += f" + {len(c.profile.extras)} extras"
     return p
 
 
