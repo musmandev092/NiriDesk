@@ -6,7 +6,7 @@ Fedora 45 desktop on niri + DMS, installed from a kickstart ISO and kept in shap
 - Brave, foot, Thunar, FeatherPad, galculator, imv, mpv, GNOME Disks, btop, nano, LocalSend
 - CUPS, firewalld, plymouth, SELinux enforcing, no SSH server
 - NVIDIA detected automatically: pre-built `kmod-nvidia` + `nvidia` from [fedora-nvidia-kmod](https://github.com/musmandev092/fedora-nvidia-kmod), no akmod
-- Optional toolbox (the only installer choice)
+- Optional in the installer (Software → Extras): toolbox, Chromium, Edge, Claude Code, Codex, Antigravity, Cursor, OpenCode and Herdr (CLI and apps)
 
 About 818 packages (833 with toolbox, +4 with NVIDIA).
 
@@ -23,6 +23,7 @@ On an existing Fedora 45:
 ```sh
 ./apply.sh                      # system + home
 touch .toolbox && ./apply.sh system
+echo chromium >> .extras && ./apply.sh   # see ./extras.sh list
 ```
 
 ## Keys
