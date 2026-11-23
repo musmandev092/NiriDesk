@@ -1,0 +1,12 @@
+[Unit]
+Description=NiriDesk: finish setup and link the login screen on first login
+ConditionPathExists=|!%h/.local/state/niridesk/firstrun.done
+ConditionPathExists=|!%h/.local/state/niridesk/greeter-sync.done
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/Projects/NiriDesk/install/firstrun.sh
+
+[Install]
+WantedBy=default.target
