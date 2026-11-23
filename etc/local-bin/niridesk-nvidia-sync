@@ -1,0 +1,82 @@
+#!/bin/bash
+# Install kmod-nvidia + nvidia from musmandev092/fedora-nvidia-kmod releases.
+set -euo pipefail
+
+readonly REPO=musmandev092/fedora-nvidia-kmod
+readonly API=https://api.github.com/repos/$REPO/releases
+SUDO=sudo; [ "$(id -u)" -eq 0 ] && SUDO=""
+die() { echo "niridesk-nvidia-sync: $*" >&2; exit 1; }
+fetch() { curl -fsSL --proto '=https' --tlsv1.2 --retry 3 --connect-timeout 15 "$@"; }
+
+case "${1:-}" in -h|--help) echo "Usage: niridesk-nvidia-sync [kernel-version]  (default: newest installed kernel-core)"; exit 0 ;; esac
+kver=${1:-}
+[ -n "$kver" ] || kver=$(rpm -q --qf '%{VERSION}-%{RELEASE}.%{ARCH}\n' kernel-core 2>/dev/null | sort -V | tail -n1) || kver=""
+[[ $kver =~ ^[0-9][A-Za-z0-9._+~-]*$ ]] || die "cannot determine the target kernel; pass it as the first argument"
+rpm -q "kernel-core-$kver" >/dev/null 2>&1 || die "kernel $kver is not installed (running: $(uname -r))"
+fedora=$(rpm -E %fedora)
+
+pick() {
+    python3 -I -c '
+import json, re, sys
+pat = re.compile(sys.argv[1])
+for a in json.load(sys.stdin).get("assets", []):
+    if pat.fullmatch(a["name"]) and (a.get("digest") or "").startswith("sha256:"):
+        print(a["name"], a["browser_download_url"], a["digest"][7:]); break' "$1"
+}
+
+echo "==> Kernel module for $kver"
+krel=$(fetch "$API/tags/kmod-$kver" 2>/dev/null) || die "no release kmod-$kver in $REPO (or GitHub unreachable); nothing changed"
+read -r kname kurl ksum < <(pick "kmod-nvidia-${kver//./\\.}-[0-9.]+-[0-9]+\\.fc$fedora\\.x86_64\\.rpm" <<<"$krel") \
+    || die "release kmod-$kver has no checksummed kmod RPM; nothing changed"
+drv=$(sed -E "s/^kmod-nvidia-${kver//./\\.}-([0-9.]+)-.*/\\1/" <<<"$kname")
+[[ $drv =~ ^[0-9]+(\.[0-9]+)+$ ]] || die "cannot read the driver version from $kname"
+
+have_k=$(rpm -q --qf '%{VERSION}' "kmod-nvidia-$kver" 2>/dev/null) || have_k=""
+have_u=$(rpm -q --qf '%{VERSION}' nvidia 2>/dev/null) || have_u=""
+if [ "$have_k" = "$drv" ] && [ "$have_u" = "$drv" ]; then
+    echo "==> kmod-nvidia-$kver and nvidia $drv already installed"
+    exit 0
+fi
+
+echo "==> User-space driver $drv"
+list='[]'
+for page in 1 2 3 4 5 6 7 8 9 10; do
+    chunk=$(fetch "$API?per_page=100&page=$page") || die "GitHub unreachable; nothing changed"
+    list=$(python3 -I -c 'import json,sys; a=json.loads(sys.argv[1]); b=json.loads(sys.argv[2]); print(json.dumps(a+b))' "$list" "$chunk")
+    grep -q "\"tag_name\": *\"nvidia-$drv-" <<<"$chunk" && break
+    [ "$(python3 -I -c 'import json,sys; print(len(json.load(sys.stdin)))' <<<"$chunk")" -lt 100 ] && break
+done
+read -r uname uurl usum < <(python3 -I -c '
+import json, re, sys
+drv, fed = sys.argv[1], sys.argv[2]
+pat = re.compile(r"nvidia-" + re.escape(drv) + r"-[0-9]+\.fc" + fed + r"\.x86_64\.rpm")
+for rel in json.load(sys.stdin):
+    if not rel["tag_name"].startswith("nvidia-" + drv + "-"):
+        continue
+    for a in rel.get("assets", []):
+        if pat.fullmatch(a["name"]) and (a.get("digest") or "").startswith("sha256:"):
+            print(a["name"], a["browser_download_url"], a["digest"][7:]); sys.exit(0)' "$drv" "$fedora" <<<"$list") \
+    || die "no checksummed nvidia-$drv RPM for Fedora $fedora in $REPO; nothing changed"
+
+for u in "$kurl" "$uurl"; do
+    [[ $u == "https://github.com/$REPO/releases/download/"* ]] || die "unexpected download URL $u; nothing changed"
+done
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+fetch -o "$tmp/$kname" "$kurl" || die "download of $kname failed; nothing changed"
+fetch -o "$tmp/$uname" "$uurl" || die "download of $uname failed; nothing changed"
+echo "$ksum  $tmp/$kname" | sha256sum -c --status || die "SHA-256 mismatch for $kname; nothing changed"
+echo "$usum  $tmp/$uname" | sha256sum -c --status || die "SHA-256 mismatch for $uname; nothing changed"
+
+read -r pname < <(rpm -qp --nosignature --qf '%{NAME}\n' "$tmp/$kname" 2>/dev/null) || die "$kname is not a readable RPM"
+[ "$pname" = "kmod-nvidia-$kver" ] || die "$kname is built for ${pname#kmod-nvidia-}, not $kver; nothing changed"
+req=$(rpm -qp --nosignature --requires "$tmp/$kname" 2>/dev/null | sed -n 's/^kernel-uname-r = //p') || req=""
+[ -z "$req" ] || [ "$req" = "$kver" ] || die "$kname requires kernel $req, not $kver; nothing changed"
+
+echo "==> Installing NVIDIA $drv for kernel $kver"
+# replaces RPM Fusion's driver if present
+$SUDO dnf -y --setopt=install_weak_deps=False --exclude='akmod-nvidia*' --allowerasing install "$tmp/$kname" "$tmp/$uname" \
+    || die "dnf could not install driver $drv for kernel $kver; nothing changed"
+$SUDO dracut --force --kver "$kver" || echo "niridesk-nvidia-sync: warning: initramfs rebuild failed; rerun: sudo dracut --force --kver $kver" >&2
+echo "==> NVIDIA $drv installed for kernel $kver"
