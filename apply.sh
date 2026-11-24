@@ -172,10 +172,22 @@ do_system() {
             done_ "GRUB font: adwaita-mono-48.pf2 (generated)"
         else note "GRUB font: grub2-mkfont failed"; fi
     else done_ "GRUB font: adwaita-mono-48.pf2"; fi
-    if [ -f "$font" ] && [ -f /etc/default/grub ] && ! grep -qxF "GRUB_FONT=$font" /etc/default/grub; then
-        $SUDO sed -i '/^GRUB_FONT=/d' /etc/default/grub
-        echo "GRUB_FONT=$font" | $SUDO tee -a /etc/default/grub >/dev/null
-        $SUDO grub2-mkconfig -o /boot/grub2/grub.cfg >/dev/null 2>&1 && done_ "GRUB_FONT (updated, grub.cfg regenerated)"
+    # Fedora ships GRUB_TERMINAL_OUTPUT="console": the firmware text console, which
+    # ignores GRUB_FONT (tiny text on 4K). grub2-mkconfig loads the font only for gfxterm.
+    if [ -f "$font" ] && [ -f /etc/default/grub ]; then
+        local kv key grub_changed=0
+        for kv in "GRUB_FONT=$font" 'GRUB_TERMINAL_OUTPUT="gfxterm"' 'GRUB_GFXMODE=auto'; do
+            key=${kv%%=*}
+            grep -qxF "$kv" /etc/default/grub && continue
+            $SUDO sed -i "/^$key=/d" /etc/default/grub
+            echo "$kv" | $SUDO tee -a /etc/default/grub >/dev/null
+            grub_changed=1
+        done
+        if [ "$grub_changed" = 1 ] || ! $SUDO grep -q 'loadfont .*adwaita-mono-48' /boot/grub2/grub.cfg 2>/dev/null; then
+            if $SUDO grub2-mkconfig -o /boot/grub2/grub.cfg >/dev/null 2>&1; then
+                done_ "GRUB: gfxterm + adwaita-mono-48 (grub.cfg regenerated)"
+            else note "GRUB: grub2-mkconfig failed; run: sudo grub2-mkconfig -o /boot/grub2/grub.cfg"; fi
+        else done_ "GRUB: gfxterm + adwaita-mono-48"; fi
     fi
 
     sys_put "$HERE/etc/yum.repos.d/claude-desktop.repo" /etc/yum.repos.d/claude-desktop.repo || true

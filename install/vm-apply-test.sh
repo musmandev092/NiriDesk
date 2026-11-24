@@ -25,6 +25,7 @@ ok()  { printf '  OK    %s\n' "$*"; }
 bad() { printf '  FAIL  %s\n' "$*"; }
 chk() { local w=$1; shift; if "$@" >/dev/null 2>&1; then ok "$w"; else bad "$w"; fi; }
 chk "GRUB font set"                   grep -qx 'GRUB_FONT=/boot/grub2/fonts/adwaita-mono-48.pf2' /etc/default/grub
+chk "GRUB gfxterm"                    grep -qx 'GRUB_TERMINAL_OUTPUT="gfxterm"' /etc/default/grub
 chk "Chromium flags hook (once)"      sh -c '[ "$(grep -c "^# >>> niridesk:" /etc/chromium/chromium.conf)" -eq 1 ]'
 chk "firewall: SSH closed"            sh -c '! echo test | sudo -S firewall-cmd --query-service=ssh'
 chk "firewall: no http"               sh -c '! echo test | sudo -S firewall-cmd --query-service=http'

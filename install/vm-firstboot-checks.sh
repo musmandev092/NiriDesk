@@ -23,6 +23,7 @@ echo "## installer did the system part"
 chk "NiriDesk copied to ~/Projects"    test -x ~/Projects/NiriDesk/apply.sh
 chk "NiriDesk owned by the user"       sh -c '[ "$(stat -c %U ~/Projects/NiriDesk/apply.sh)" = test ]'
 chk "GRUB font"                        grep -qx 'GRUB_FONT=/boot/grub2/fonts/adwaita-mono-48.pf2' /etc/default/grub
+chk "GRUB gfxterm"                     grep -qx 'GRUB_TERMINAL_OUTPUT="gfxterm"' /etc/default/grub
 chk "greetd running"                   systemctl is-active greetd
 chk "fully updated"                    sh -c '[ "$(echo test | sudo -S dnf -q check-upgrade 2>/dev/null | grep -cE "\.(x86_64|noarch)")" -eq 0 ]'
 chk "no Chromium (extra only)" sh -c '! rpm -q chromium'
