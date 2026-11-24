@@ -18,7 +18,6 @@ input {
         accel-speed 0.25
         accel-profile "adaptive"
     }
-    focus-follows-mouse max-scroll-amount="0%"
 }
 
 gestures {
