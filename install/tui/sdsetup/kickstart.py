@@ -101,7 +101,7 @@ def keyboard_line(config):
 def boot_args(config, env):
     # rhgb quiet: the graphical boot screen (firmware logo) with the disk password box; VMs keep text on serial.
     args = ["fbcon=font:TER16x32"] if env.get("vm") else ["rhgb", "quiet", "fbcon=font:TER16x32"]
-    # nouveau is blacklisted by apply.sh only once a matching NVIDIA driver is installed
+    # nouveau is blacklisted by apply.sh: once the NVIDIA driver is installed, or when an Intel/AMD GPU can drive the display
     if env.get("vm"):
         args.append(SERIAL_ARGS)
     if config.boot.args:

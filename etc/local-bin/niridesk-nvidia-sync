@@ -1,9 +1,8 @@
 #!/bin/bash
-# Install kmod-nvidia + nvidia from musmandev092/fedora-nvidia-kmod releases.
+# Install kmod-nvidia + nvidia from musmandev092/fedora-nvidia releases.
 set -euo pipefail
 
-readonly REPO=musmandev092/fedora-nvidia-kmod
-readonly API=https://api.github.com/repos/$REPO/releases
+readonly OWNER=musmandev092 NAME=fedora-nvidia
 SUDO=sudo; [ "$(id -u)" -eq 0 ] && SUDO=""
 die() { echo "niridesk-nvidia-sync: $*" >&2; exit 1; }
 fetch() { curl -fsSL --proto '=https' --tlsv1.2 --retry 3 --connect-timeout 15 "$@"; }
@@ -14,6 +13,15 @@ kver=${1:-}
 [[ $kver =~ ^[0-9][A-Za-z0-9._+~-]*$ ]] || die "cannot determine the target kernel; pass it as the first argument"
 rpm -q "kernel-core-$kver" >/dev/null 2>&1 || die "kernel $kver is not installed (running: $(uname -r))"
 fedora=$(rpm -E %fedora)
+
+# GitHub follows renames but hands out download URLs under the current name;
+# ask for that name, and only trust it while the owner is still ours
+REPO=$(fetch "https://api.github.com/repos/$OWNER/$NAME" 2>/dev/null \
+    | python3 -I -c 'import json,sys; print(json.load(sys.stdin)["full_name"])' 2>/dev/null) \
+    || die "cannot reach github.com/$OWNER/$NAME; nothing changed"
+[[ $REPO =~ ^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$ ]] || die "unexpected repository name '$REPO'; nothing changed"
+[ "${REPO%%/*}" = "$OWNER" ] || die "$OWNER/$NAME now belongs to ${REPO%%/*}; nothing changed"
+readonly REPO API=https://api.github.com/repos/$REPO/releases
 
 pick() {
     python3 -I -c '

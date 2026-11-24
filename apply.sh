@@ -80,7 +80,18 @@ PKGS_FONTS=(google-noto-sans-vf-fonts google-noto-serif-vf-fonts google-noto-san
     google-noto-color-emoji-fonts dejavu-sans-fonts dejavu-sans-mono-fonts dejavu-serif-fonts
     adwaita-sans-fonts adwaita-mono-fonts)
 
-NOUVEAU_ARGS="rd.driver.blacklist=nouveau,nova_core modprobe.blacklist=nouveau,nova_core nvidia-drm.fbdev=1"
+BLACKLIST_ARGS="rd.driver.blacklist=nouveau,nova_core modprobe.blacklist=nouveau,nova_core"
+NOUVEAU_ARGS="$BLACKLIST_ARGS nvidia-drm.fbdev=1"
+
+# an Intel/AMD display GPU next to the NVIDIA one (laptops, desktops with iGPU)
+has_other_gpu() {
+    local d
+    for d in /sys/bus/pci/devices/*; do
+        case $(cat "$d/class" 2>/dev/null) in 0x0300*|0x0380*) ;; *) continue ;; esac
+        case $(cat "$d/vendor" 2>/dev/null) in 0x8086|0x1002) return 0 ;; esac
+    done
+    return 1
+}
 
 do_system() {
     say "system (sudo)"
@@ -140,10 +151,15 @@ do_system() {
                 systemctl is-enabled -q "$s.service" 2>/dev/null || $SUDO systemctl enable "$s.service" >/dev/null 2>&1 || true
             done
             done_ "NVIDIA power services, memory clock lock, prime-run"
+        elif has_other_gpu; then
+            # no driver: nouveau can take the whole session down (black login screen),
+            # so keep it off and let the Intel/AMD GPU drive the display
+            $SUDO grubby --update-kernel=ALL --args="$BLACKLIST_ARGS" && done_ "nouveau blacklisted (Intel/AMD graphics in use)"
+            note "NVIDIA: no driver for the newest kernel yet; screen runs on Intel/AMD graphics, outputs wired to the NVIDIA GPU stay dark. Run niridesk-nvidia-sync later."
         else
-            # no driver: keep nouveau so the GPU's ports work
+            # NVIDIA is the only GPU: nouveau is the only way to light the screen
             $SUDO grubby --update-kernel=ALL --remove-args="$NOUVEAU_ARGS" || true
-            note "NVIDIA: no driver for the newest kernel yet; nouveau left enabled. Run niridesk-nvidia-sync later."
+            note "NVIDIA: no driver for the newest kernel yet and no other GPU; nouveau left enabled. Run niridesk-nvidia-sync later."
         fi
     else
         done_ "Hardware: Intel/AMD graphics (NVIDIA skipped)"

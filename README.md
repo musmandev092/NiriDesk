@@ -5,7 +5,7 @@ Fedora 45 desktop on niri + DMS, installed from a kickstart ISO and kept in shap
 - niri + DMS shell, DMS login screen on niri
 - Brave, foot, Thunar, FeatherPad, galculator, imv, mpv, GNOME Disks, btop, nano, LocalSend
 - CUPS, firewalld, plymouth, SELinux enforcing, no SSH server
-- NVIDIA detected automatically: pre-built `kmod-nvidia` + `nvidia` from [fedora-nvidia-kmod](https://github.com/musmandev092/fedora-nvidia-kmod), no akmod
+- NVIDIA detected automatically: pre-built `kmod-nvidia` + `nvidia` from [fedora-nvidia](https://github.com/musmandev092/fedora-nvidia), no akmod
 - Optional in the installer (Software → Extras): toolbox, Chromium, Edge, VS Code, GitHub CLI, Claude Code, Codex, Antigravity, Cursor, OpenCode and Herdr (CLI and apps)
 
 About 818 packages (833 with toolbox, +4 with NVIDIA).
