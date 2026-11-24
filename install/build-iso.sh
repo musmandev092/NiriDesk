@@ -49,7 +49,7 @@ command -v mkksiso >/dev/null || { echo "mkksiso not found: sudo dnf install lor
 STAGE=$(mktemp -d)
 trap 'rm -rf "$STAGE"' EXIT
 rsync -a --exclude='target/' --exclude='.git/' --exclude='__pycache__/' --exclude='*.log' \
-      --exclude='*.bak' --exclude='*.bak.*' --exclude='/.toolbox' --exclude='/.claude/' "$HERE/../" "$STAGE/NiriDesk/"
+      --exclude='*.bak' --exclude='*.bak.*' --exclude='/.toolbox' --exclude='/.claude/' --exclude='/.extras' --exclude='/PLAN.md' --exclude='/personal/' "$HERE/../" "$STAGE/NiriDesk/"
 T="$STAGE/NiriDesk/install/tui"
 
 TOOLBOX=false; [ "$MODE" = toolbox ] && TOOLBOX=true
