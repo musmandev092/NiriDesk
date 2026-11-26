@@ -70,7 +70,8 @@ PKGS_DESKTOP=(niri xwayland-satellite dms greetd xdg-desktop-portal-gnome xdg-de
     policycoreutils-python-utils xdg-user-dirs xdg-terminal-exec wl-clipboard grim slurp swappy
     brightnessctl adw-gtk3-theme dconf fastfetch)
 PKGS_APPS=(brave-origin foot imv mpv mpv-mpris Thunar thunar-volman thunar-archive-plugin tumbler xarchiver
-    featherpad galculator gnome-disk-utility btop nano gvfs gvfs-fuse gvfs-mtp gvfs-smb)
+    featherpad galculator gnome-disk-utility btop nano gvfs gvfs-fuse gvfs-mtp gvfs-smb
+    libayatana-appindicator-gtk3)
 PKGS_MEDIA=(ffmpeg-libs pipewire pipewire-alsa pipewire-pulseaudio wireplumber pulseaudio-utils alsa-utils)
 PKGS_SYSTEM=(cups cups-pk-helper avahi nss-mdns plymouth plymouth-system-theme firewalld grub2-tools-extra)
 PKGS_FONTS=(google-noto-sans-vf-fonts google-noto-serif-vf-fonts google-noto-sans-mono-vf-fonts
@@ -98,7 +99,7 @@ do_system() {
     [ -z "$SUDO" ] || $SUDO -n true 2>/dev/null || $SUDO -v
 
     install_missing "desktop (niri, DMS, portals, keyring, power profiles)" "${PKGS_DESKTOP[@]}"
-    install_missing "apps (Brave, foot, Thunar, FeatherPad, galculator, imv, mpv, Disks, btop, nano)" "${PKGS_APPS[@]}"
+    install_missing "apps (Brave, foot, Thunar, FeatherPad, galculator, imv, mpv, Disks, btop, nano, LocalSend tray lib)" "${PKGS_APPS[@]}"
     install_missing "sound and video codecs" "${PKGS_MEDIA[@]}"
     install_missing "printing, boot logo, firewall" "${PKGS_SYSTEM[@]}"
     install_missing "fonts" "${PKGS_FONTS[@]}"

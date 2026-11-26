@@ -25,7 +25,7 @@ chk "Fedora copies of DMS deps hidden"  test -f /etc/dnf/repos.override.d/50-dms
 for p in quickshell dux-search dux-gop matugen dms dux-greeter niri xwayland-satellite; do printf '        %s\n' "$(rpm -q "$p")"; done
 
 echo "## apps"
-for p in brave-origin foot Thunar featherpad galculator imv mpv gnome-disk-utility btop nano cups cups-pk-helper firewalld; do
+for p in brave-origin foot Thunar featherpad galculator imv mpv gnome-disk-utility btop nano cups cups-pk-helper firewalld libayatana-appindicator-gtk3; do
     chk "$p" rpm -q "$p"
 done
 for p in chromium microsoft-edge-stable; do
