@@ -84,7 +84,7 @@ req=$(rpm -qp --nosignature --requires "$tmp/$kname" 2>/dev/null | sed -n 's/^ke
 
 echo "==> Installing NVIDIA $drv for kernel $kver"
 # replaces RPM Fusion's driver if present
-$SUDO dnf -y --setopt=install_weak_deps=False --exclude='akmod-nvidia*' --allowerasing install "$tmp/$kname" "$tmp/$uname" \
+$SUDO dnf -y --setopt=install_weak_deps=False --exclude='akmod-nvidia*' install --allowerasing "$tmp/$kname" "$tmp/$uname" \
     || die "dnf could not install driver $drv for kernel $kver; nothing changed"
 $SUDO dracut --force --kver "$kver" || echo "niridesk-nvidia-sync: warning: initramfs rebuild failed; rerun: sudo dracut --force --kver $kver" >&2
 echo "==> NVIDIA $drv installed for kernel $kver"
